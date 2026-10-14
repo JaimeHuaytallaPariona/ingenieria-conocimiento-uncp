@@ -1,0 +1,271 @@
+{
+  "info": {
+    "_postman_id": "1f917170-186c-452f-9026-e04a1bbaca5c",
+    "name": "ISO46B — Semana 06 — API Predicción de Lluvia",
+    "description": "Colección de evidencia de despliegue para la Semana 06 (Tecnologías Emergentes). Incluye las dos implementaciones enseñadas en el curso -Flask (manejo manual de errores) y FastAPI (validación automática con pydantic)- más el endpoint de monitoreo /salud. Usa las variables de colección para cambiar host/puertos sin editar cada solicitud.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "host",
+      "value": "127.0.0.1"
+    },
+    {
+      "key": "puerto_flask",
+      "value": "5000"
+    },
+    {
+      "key": "puerto_fastapi",
+      "value": "8000"
+    }
+  ],
+  "item": [
+    {
+      "name": "Flask API (puerto 5000) — Guía de Laboratorio 06",
+      "description": "Endpoints de la API construida en la Guía de Laboratorio 06 (api.py). Antes de ejecutar estas solicitudes, levanta el servidor con: python api.py",
+      "item": [
+        {
+          "name": "POST /predecir — solicitud válida",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{host}}:{{puerto_flask}}/predecir",
+              "protocol": "http",
+              "host": [
+                "{{host}}"
+              ],
+              "port": "{{puerto_flask}}",
+              "path": [
+                "predecir"
+              ]
+            },
+            "description": "Caso exitoso: las 3 características requeridas están presentes. Respuesta esperada: 200 OK con {\"prediccion\": ..., \"probabilidad\": ...}.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"temp_max\": 18.5,\n  \"temp_min\": 4.2,\n  \"viento_max\": 12.0\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST /predecir — campo faltante (error 400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{host}}:{{puerto_flask}}/predecir",
+              "protocol": "http",
+              "host": [
+                "{{host}}"
+              ],
+              "port": "{{puerto_flask}}",
+              "path": [
+                "predecir"
+              ]
+            },
+            "description": "Caso de error: faltan 'temp_min' y 'viento_max'. Respuesta esperada: 400 Bad Request con un mensaje de error describiendo las características faltantes (manejo manual de errores, a diferencia de la validación automática de FastAPI).",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"temp_max\": 18.5\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST /predecir — cuerpo vacío (error 400)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{host}}:{{puerto_flask}}/predecir",
+              "protocol": "http",
+              "host": [
+                "{{host}}"
+              ],
+              "port": "{{puerto_flask}}",
+              "path": [
+                "predecir"
+              ]
+            },
+            "description": "Caso de error: cuerpo JSON vacío. Respuesta esperada: 400 Bad Request.",
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "FastAPI (puerto 8000) — Notebook de Despliegue Aplicado",
+      "description": "Endpoints de la API construida con FastAPI en Despliegue_Aplicado_Paso_a_Paso.ipynb (api_fastapi.py). Antes de ejecutar estas solicitudes, levanta el servidor con: uvicorn api_fastapi:app --port 8000 (o ejecuta la celda correspondiente del notebook).",
+      "item": [
+        {
+          "name": "POST /predecir — solicitud válida",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{host}}:{{puerto_fastapi}}/predecir",
+              "protocol": "http",
+              "host": [
+                "{{host}}"
+              ],
+              "port": "{{puerto_fastapi}}",
+              "path": [
+                "predecir"
+              ]
+            },
+            "description": "Caso exitoso: mismo resultado que en Flask, porque ambas APIs sirven el mismo modelo. Respuesta esperada: 200 OK.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"temp_max\": 18.5,\n  \"temp_min\": 4.2,\n  \"viento_max\": 12.0\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST /predecir — campo faltante (error 422 automático)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{host}}:{{puerto_fastapi}}/predecir",
+              "protocol": "http",
+              "host": [
+                "{{host}}"
+              ],
+              "port": "{{puerto_fastapi}}",
+              "path": [
+                "predecir"
+              ]
+            },
+            "description": "Caso de error: FastAPI valida el cuerpo contra el modelo pydantic 'DatosClima' automáticamente -sin código manual de validación-. Respuesta esperada: 422 Unprocessable Entity, con el detalle de qué campo falta generado por FastAPI.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"temp_max\": 18.5\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST /predecir — tipo de dato inválido (error 422)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{host}}:{{puerto_fastapi}}/predecir",
+              "protocol": "http",
+              "host": [
+                "{{host}}"
+              ],
+              "port": "{{puerto_fastapi}}",
+              "path": [
+                "predecir"
+              ]
+            },
+            "description": "Caso de error adicional que Flask NO detecta automáticamente: un valor de tipo incorrecto. pydantic lo rechaza antes de que el código del endpoint se ejecute. Respuesta esperada: 422.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"temp_max\": \"no-es-un-numero\",\n  \"temp_min\": 4.2,\n  \"viento_max\": 12.0\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET /docs — Swagger UI (abrir en navegador, no en Postman)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{host}}:{{puerto_fastapi}}/docs",
+              "protocol": "http",
+              "host": [
+                "{{host}}"
+              ],
+              "port": "{{puerto_fastapi}}",
+              "path": [
+                "docs"
+              ]
+            },
+            "description": "FastAPI genera esta interfaz interactiva automáticamente a partir del esquema OpenAPI (ver openapi.json). Mejor abrirla directamente en el navegador."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Monitoreo (/salud)",
+      "description": "Endpoint de salud, presente en ambas implementaciones (criterio 'Destacado' de la rúbrica).",
+      "item": [
+        {
+          "name": "GET /salud — Flask",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{host}}:{{puerto_flask}}/salud",
+              "protocol": "http",
+              "host": [
+                "{{host}}"
+              ],
+              "port": "{{puerto_flask}}",
+              "path": [
+                "salud"
+              ]
+            },
+            "description": "Respuesta esperada: 200 OK, {\"estado\": \"ok\", \"modelo_cargado\": true}."
+          },
+          "response": []
+        },
+        {
+          "name": "GET /salud — FastAPI",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{host}}:{{puerto_fastapi}}/salud",
+              "protocol": "http",
+              "host": [
+                "{{host}}"
+              ],
+              "port": "{{puerto_fastapi}}",
+              "path": [
+                "salud"
+              ]
+            },
+            "description": "Respuesta esperada: 200 OK, {\"estado\": \"ok\", \"modelo_cargado\": true}."
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
